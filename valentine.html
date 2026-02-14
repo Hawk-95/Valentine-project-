@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sayang, ini untukmu 💌</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Sacramento&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --rose:  #c2185b;
+  --blush: #f8bbd0;
+  --deep:  #0e0008;
+  --gold:  #e4b84a;
+  --gold2: #f7d87c;
+  --cream: #fff8f5;
+  --wine:  #7b1d3f;
+}
+*  { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; height:100%; }
+
+body {
+background: var(--deep);
+font-family: 'Cormorant Garamond', serif;
+overflow-x: hidden;
+overflow-y: auto;
+/* NO cursor:none — breaks mobile */
+-webkit-overflow-scrolling: touch;
+touch-action: pan-y;
+-webkit-tap-highlight-color: transparent;
+}
+
+/* CANVAS — pointer-events none, touch-action none only on it */
+#bgc {
+position: fixed; inset: 0;
+pointer-events: none;
+z-index: 0;
+touch-action: none;
+}
+
+/* ════════════════════════════════
+OPENING SCREEN
+════════════════════════════════ */
+#openScreen {
+position: fixed; inset: 0;
+background: var(--deep);
+z-index: 200;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+overflow: hidden;
+transition: opacity 1.2s ease;
+touch-action: manipulation;
+}
+#openScreen.gone {
+opacity: 0;
+pointer-events: none;
+}
+/* use JS to set display:none AFTER transition ends — see script */
+
+/* star field */
+#openScreen::before {
+content: '';
+position: absolute; inset: 0;
+background-image:
+radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,.6) 0%,transparent 100%),
+radial-gradient(1px 1px   at 82% 22%, rgba(255,255,255,.4) 0%,transparent 100%),
+radial-gradient(2px 2px   at 55% 72%, rgba(228,184,74,.4) 0%,transparent 100%),
+radial-gradient(1px 1px   at  8% 78%, rgba(255,255,255,.4) 0%,transparent 100%),
+radial-gradient(1.5px 1.5px at 91% 62%, rgba(255,255,255,.3) 0%,transparent 100%),
+radial-gradient(1px 1px   at 38% 42%, rgba(255,255,255,.2) 0%,transparent 100%),
+radial-gradient(1px 1px   at 68% 90%, rgba(255,255,255,.3) 0%,transparent 100%),
+radial-gradient(2px 2px   at 47%  4%, rgba(255,255,255,.5) 0%,transparent 100%),
+radial-gradient(1px 1px   at 23% 55%, rgba(248,187,208,.3) 0%,transparent 100%),
+radial-gradient(1.5px 1.5px at 77% 35%, rgba(228,184,74,.25) 0%,transparent 100%);
+animation: starTwinkle 5s ease-in-out infinite alternate;
+pointer-events: none;
+}
+@keyframes starTwinkle { from{opacity:.55} to{opacity:1} }
+
+/* glow orb */
+#openScreen::after {
+content: '';
+position: absolute;
+width: clamp(220px,78vw,480px); height: clamp(220px,78vw,480px);
+border-radius: 50%;
+background: radial-gradient(ellipse, rgba(194,24,91,.32) 0%, transparent 70%);
+top:50%; left:50%; transform:translate(-50%,-52%);
+animation: breathe 4s ease-in-out infinite;
+pointer-events: none;
+}
+@keyframes breathe {
+0%,100%{ transform:translate(-50%,-52%) scale(1); opacity:.65; }
+50%    { transform:translate(-50%,-52%) scale(1.18); opacity:1; }
+}
+
+.open-inner {
+position: relative; z-index: 2;
+display: flex; flex-direction: column; align-items: center;
+gap: 0; padding: 20px 24px;
+animation: riseIn 1.4s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes riseIn {
+from{ opacity:0; transform:translateY(55px); }
+to  { opacity:1; transform:translateY(0); }
+}
+
+/* ── phone mockup ── */
+.phone-wrap {
+width: clamp(140px,38vw,200px);
+height: clamp(244px,66vw,350px);
+margin-bottom: 24px;
+}
+.phone-shell {
+width:100%; height:100%;
+border-radius: clamp(22px,7vw,36px);
+background: linear-gradient(145deg,#261525,#110010,#1c0016);
+border: 2px solid rgba(228,184,74,.22);
+box-shadow:
+0 0 0 1px rgba(255,255,255,.04),
+0 0 45px rgba(194,24,91,.28),
+0 28px 60px rgba(0,0,0,.75),
+inset 0 1px 0 rgba(255,255,255,.07);
+display: flex; flex-direction: column; align-items: center;
+position: relative; overflow: hidden;
+animation: phoneBob 4s ease-in-out infinite;
+}
+@keyframes phoneBob {
+0%,100%{ transform:translateY(0) rotate(0deg); }
+35%    { transform:translateY(-8px) rotate(.4deg); }
+70%    { transform:translateY(-3px) rotate(-.2deg); }
+}
+.phone-notch {
+width: 34%; height: 18px;
+background: #0e0008;
+border-radius: 0 0 12px 12px;
+margin-top: 6px; flex-shrink: 0; position: relative; z-index: 2;
+}
+.phone-screen {
+flex: 1; width: 100%;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+padding: 8px 12px 14px; gap: 10px;
+overflow: hidden;
+}
+.ft-label {
+display: flex; align-items: center; gap: 5px;
+font-family: 'Montserrat', sans-serif;
+font-size: clamp(.44rem,1.9vw,.6rem);
+font-weight: 300; letter-spacing: .14em; text-transform: uppercase;
+color: rgba(255,255,255,.38);
+}
+.ft-dot {
+width: 5px; height: 5px; border-radius: 50%;
+background: #34c759; box-shadow: 0 0 7px #34c759;
+animation: dotBlink 2s ease-in-out infinite;
+}
+@keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.ft-avs { display:flex; gap: clamp(8px,3vw,14px); align-items:center; }
+.av { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.av-c {
+width: clamp(38px,10vw,54px); height: clamp(38px,10vw,54px);
+border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+font-size: clamp(1.1rem,3.5vw,1.6rem);
+}
+.av-c.y { background:radial-gradient(#381e4c,#180828); border:1.5px solid rgba(228,184,74,.38); }
+.av-c.h { background:radial-gradient(#580c2c,#280414); border:1.5px solid rgba(248,187,208,.38); }
+.av-n { font-family:'Montserrat',sans-serif; font-size:clamp(.38rem,1.6vw,.52rem); color:rgba(255,255,255,.32); letter-spacing:.1em; text-transform:uppercase; }
+.ft-hrt {
+font-size: clamp(.72rem,2.6vw,1rem);
+color: var(--rose); text-shadow:0 0 10px rgba(194,24,91,.8);
+animation: heartPop 1.5s ease-in-out infinite;
+}
+@keyframes heartPop { 0%,100%{transform:scale(1);opacity:.7} 50%{transform:scale(1.35);opacity:1} }
+.ft-bub {
+background: rgba(194,24,91,.14);
+border: 1px solid rgba(248,187,208,.14);
+border-radius: 12px 12px 12px 4px;
+padding: 7px 10px; width: 100%;
+}
+.ft-bub p {
+font-family: 'Cormorant Garamond', serif; font-style:italic;
+font-size: clamp(.58rem,2.4vw,.78rem);
+color: rgba(248,187,208,.82); line-height:1.5; text-align:center;
+}
+.ph-shine {
+position: absolute; top:0; left:-65%;
+width:38%; height:100%;
+background: linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+animation: shine 5s ease-in-out infinite;
+}
+@keyframes shine { 0%{left:-65%} 45%,100%{left:135%} }
+
+.open-name {
+font-family: 'Sacramento', cursive;
+font-size: clamp(1.8rem,7.5vw,3.6rem);
+color: var(--gold);
+text-shadow: 0 0 35px rgba(228,184,74,.5);
+letter-spacing: .04em; text-align:center;
+margin-bottom: 5px;
+}
+.open-sub {
+font-family: 'Cormorant Garamond', serif; font-style:italic;
+font-size: clamp(.78rem,3vw,1.05rem);
+color: rgba(248,187,208,.55);
+letter-spacing:.1em; text-align:center; margin-bottom:24px;
+}
+
+/* ── OPEN BUTTON — big enough to tap on mobile ── */
+.open-btn {
+display: inline-block;
+background: none;
+border: 1.5px solid rgba(228,184,74,.48);
+color: var(--gold);
+font-family: 'Montserrat', sans-serif;
+font-size: clamp(.7rem,3.5vw,.82rem);
+font-weight: 300; letter-spacing: .28em; text-transform: uppercase;
+/* min 48px tall for touch target */
+padding: 18px clamp(28px,8vw,40px);
+border-radius: 40px; cursor: pointer;
+position: relative; overflow: hidden;
+transition: all .3s ease;
+animation: btnPulse 2.5s ease-in-out infinite;
+user-select: none;
+-webkit-user-select: none;
+-webkit-tap-highlight-color: transparent;
+text-align: center;
+/* GPU layer — fixes tap ghost on iOS */
+-webkit-transform: translateZ(0);
+transform: translateZ(0);
+min-width: 180px;
+}
+.open-btn::before {
+content:'';
+position:absolute; inset:0;
+background:linear-gradient(135deg,rgba(228,184,74,.1),rgba(194,24,91,.1));
+opacity:0; transition:opacity .3s;
+}
+.open-btn:active::before { opacity:1; }
+.open-btn:active { border-color:rgba(228,184,74,.9); transform:scale(.98) translateZ(0); }
+@keyframes btnPulse {
+0%,100%{box-shadow:0 0 0 0 rgba(228,184,74,.2)}
+50%    {box-shadow:0 0 0 14px rgba(228,184,74,0)}
+}
+
+/* ════════════════════════════════
+MAIN
+════════════════════════════════ */
+#main { position:relative; z-index:1; display:none; width:100%; }
+#main.on { display:block; animation: mainIn .8s ease forwards; }
+@keyframes mainIn { from{opacity:0} to{opacity:1} }
+
+/* HERO */
+.hero {
+min-height: 100svh;
+display: flex; flex-direction:column; align-items:center; justify-content:center;
+text-align:center;
+padding: clamp(70px,12vw,120px) 24px 50px;
+position: relative;
+}
+.hero::before {
+content:''; position:absolute; inset:0;
+background:
+radial-gradient(ellipse at 50% 40%,rgba(194,24,91,.17) 0%,transparent 65%),
+radial-gradient(ellipse at 20% 80%,rgba(123,29,63,.1) 0%,transparent 50%);
+pointer-events:none;
+}
+.hero-tag {
+font-family:'Montserrat',sans-serif;
+font-size:clamp(.56rem,2.2vw,.72rem); font-weight:200;
+letter-spacing:.38em; text-transform:uppercase;
+color:rgba(228,184,74,.55); margin-bottom:16px;
+opacity:0; animation:upFade 1s ease .3s forwards;
+}
+.hero-h1 {
+font-family:'Playfair Display',serif; font-style:italic;
+font-size:clamp(2.4rem,11vw,7.5rem); line-height:1.05;
+color:var(--cream); margin-bottom:10px;
+opacity:0; animation:upFade 1s ease .6s forwards;
+}
+.gold-word {
+background:linear-gradient(120deg,var(--gold) 0%,var(--gold2) 40%,var(--blush) 70%,var(--gold) 100%);
+background-size:200%;
+-webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+animation:shimmer 5s linear infinite;
+}
+@keyframes shimmer { to{background-position:200% center} }
+.hero-sayang {
+font-family:'Sacramento',cursive;
+font-size:clamp(1.4rem,6vw,3.3rem);
+color:rgba(248,187,208,.78); margin-bottom:22px;
+opacity:0; animation:upFade 1s ease .9s forwards;
+}
+.hero-p {
+font-style:italic;
+font-size:clamp(.9rem,3.2vw,1.28rem);
+color:rgba(248,187,208,.62); max-width:420px; line-height:1.85;
+letter-spacing:.03em;
+opacity:0; animation:upFade 1s ease 1.2s forwards;
+}
+.scroll-cue {
+margin-top:52px;
+display:flex; flex-direction:column; align-items:center; gap:7px;
+font-family:'Montserrat',sans-serif;
+font-size:.56rem; letter-spacing:.3em; text-transform:uppercase;
+color:rgba(228,184,74,.38);
+opacity:0; animation:upFade 1s ease 1.8s forwards;
+}
+.scroll-bar {
+width:1px; height:42px;
+background:linear-gradient(to bottom,transparent,var(--gold));
+animation:barPulse 1.8s ease-in-out infinite;
+}
+@keyframes barPulse { 0%,100%{opacity:.3;transform:scaleY(.8)} 50%{opacity:1;transform:scaleY(1)} }
+@keyframes upFade { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:translateY(0)} }
+
+/* SECTIONS */
+.section { padding:clamp(50px,10vw,100px) clamp(16px,5vw,40px); max-width:860px; margin:0 auto; }
+.sec-label {
+font-family:'Sacramento',cursive;
+font-size:clamp(1.8rem,6.5vw,3.6rem); color:var(--gold);
+text-align:center; margin-bottom:40px; line-height:1.2;
+opacity:0; transform:translateY(28px);
+transition:opacity .8s ease,transform .8s ease;
+}
+.sec-label.on{opacity:1;transform:translateY(0)}
+
+/* QUOTE CARDS */
+.q-grid{display:grid;grid-template-columns:1fr;gap:18px;}
+.qcard {
+background:linear-gradient(135deg,rgba(123,29,63,.28),rgba(194,24,91,.08));
+border:1px solid rgba(248,187,208,.12); border-radius:18px;
+padding:clamp(22px,5vw,42px) clamp(18px,5vw,38px);
+position:relative; overflow:hidden;
+opacity:0; transform:translateY(32px);
+transition:opacity .75s ease,transform .75s ease,box-shadow .3s,border-color .3s;
+}
+.qcard::before {
+content:'\201C'; position:absolute; top:-12px; left:10px;
+font-family:'Playfair Display',serif; font-size:110px;
+color:rgba(194,24,91,.08); line-height:1; pointer-events:none;
+}
+.qcard.on{opacity:1;transform:translateY(0)}
+.qcard:active{box-shadow:0 12px 40px rgba(194,24,91,.2);border-color:rgba(248,187,208,.24)}
+.qcard-icon{font-size:1.4rem;display:block;margin-bottom:10px}
+.qcard blockquote {
+font-family:'Playfair Display',serif; font-style:italic;
+font-size:clamp(.95rem,3.2vw,1.4rem); color:var(--cream); line-height:1.75;
+position:relative; z-index:1;
+}
+.qcard-bar{width:32px;height:2px;background:linear-gradient(to right,var(--gold),var(--rose));border-radius:2px;margin-top:14px}
+
+/* FACETIME SECTION */
+.ft-section { padding:clamp(50px,10vw,100px) clamp(16px,5vw,40px); max-width:700px; margin:0 auto; text-align:center; }
+.ft-screen-big {
+width:100%; max-width:360px; margin:0 auto 36px;
+background:linear-gradient(160deg,#180920,#0c000e);
+border-radius:20px; border:1px solid rgba(248,187,208,.14);
+box-shadow:0 0 50px rgba(194,24,91,.2),0 24px 60px rgba(0,0,0,.5);
+padding:22px 20px 26px;
+opacity:0; transform:translateY(28px);
+transition:opacity .9s ease,transform .9s ease; position:relative; overflow:hidden;
+}
+.ft-screen-big.on{opacity:1;transform:translateY(0)}
+.ft-screen-big::before {
+content:''; position:absolute; top:0; left:0; right:0; height:1px;
+background:linear-gradient(to right,transparent,rgba(228,184,74,.28),transparent);
+}
+.ft-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.ft-title-txt { font-family:'Montserrat',sans-serif; font-size:.6rem; font-weight:300; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.32); }
+.ft-status { display:flex; align-items:center; gap:5px; font-family:'Montserrat',sans-serif; font-size:.56rem; font-weight:300; letter-spacing:.1em; color:rgba(52,199,89,.65); }
+.ft-green { width:5px; height:5px; border-radius:50%; background:#34c759; box-shadow:0 0 8px #34c759; animation:dotBlink 2s infinite; }
+.ft-big-avs { display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:18px; }
+.ftb-av { display:flex; flex-direction:column; align-items:center; gap:7px; }
+.ftb-c {
+width:clamp(54px,14vw,72px); height:clamp(54px,14vw,72px);
+border-radius:50%;
+display:flex; align-items:center; justify-content:center;
+font-size:clamp(1.4rem,4.5vw,2rem);
+}
+.ftb-c.a{background:radial-gradient(#281440,#100818);border:2px solid rgba(228,184,74,.28)}
+.ftb-c.b{background:radial-gradient(#480a24,#1e0010);border:2px solid rgba(248,187,208,.28)}
+.ftb-lbl{font-family:'Montserrat',sans-serif;font-size:.52rem;font-weight:200;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.28)}
+.ftb-con{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--rose);font-size:clamp(.9rem,3vw,1.3rem);text-shadow:0 0 12px rgba(194,24,91,.8);animation:heartPop 1.5s infinite}
+.ftb-con small{font-family:'Montserrat',sans-serif;font-size:.46rem;color:rgba(255,255,255,.2);letter-spacing:.14em}
+.ft-q {
+font-family:'Cormorant Garamond',serif; font-style:italic;
+font-size:clamp(.84rem,3vw,1.1rem); color:rgba(248,187,208,.72); line-height:1.75;
+border-top:1px solid rgba(248,187,208,.08); padding-top:15px;
+}
+.ft-desc {
+font-style:italic;
+font-size:clamp(.95rem,3.2vw,1.28rem); color:rgba(248,187,208,.62); line-height:1.95;
+opacity:0; transform:translateY(18px);
+transition:opacity .8s ease .2s,transform .8s ease .2s;
+}
+.ft-desc.on{opacity:1;transform:translateY(0)}
+.ft-desc em{color:var(--gold)}
+
+/* LETTER */
+.letter-section{padding:clamp(50px,10vw,100px) clamp(16px,5vw,32px);max-width:660px;margin:0 auto}
+.letter-paper {
+background:linear-gradient(160deg,#fffdf8,#fff2f6);
+border-radius:14px;
+padding:clamp(28px,7vw,56px) clamp(20px,6vw,48px);
+color:var(--deep);
+box-shadow:0 32px 80px rgba(0,0,0,.5),0 0 0 1px rgba(248,187,208,.22);
+opacity:0; transform:translateY(36px) rotate(-1deg);
+transition:opacity .9s ease,transform .9s ease;
+position:relative; overflow:hidden;
+}
+.letter-paper.on{opacity:1;transform:translateY(0) rotate(0)}
+.letter-paper::before {
+content:''; position:absolute; top:0; left:0; right:0; height:4px;
+background:linear-gradient(to right,var(--rose),var(--gold),var(--rose));
+border-radius:14px 14px 0 0;
+}
+.ltr-lines {
+position:absolute; inset:58px 0 0 0; pointer-events:none;
+background-image:repeating-linear-gradient(to bottom,transparent,transparent 37px,rgba(194,24,91,.06) 38px);
+}
+.ltr-stamp {
+position:absolute; top:18px; right:18px;
+width:46px; height:56px;
+border:2px dashed rgba(194,24,91,.3); border-radius:4px;
+display:flex; align-items:center; justify-content:center;
+font-size:1.5rem; transform:rotate(5deg);
+background:rgba(255,245,250,.7);
+}
+.ltr-dear { font-family:'Sacramento',cursive; font-size:clamp(1.6rem,5.5vw,2.5rem); color:var(--rose); margin-bottom:20px; position:relative; z-index:1; }
+.ltr-body { font-size:clamp(.9rem,2.8vw,1.1rem); line-height:2; color:#2a0c1a; position:relative; z-index:1; }
+.ltr-body p{margin-bottom:16px}
+.ltr-body strong{color:var(--wine)}
+.ltr-body em{color:#7b1d3f;font-style:italic}
+.ltr-sign { font-family:'Sacramento',cursive; font-size:clamp(1.5rem,5vw,2.2rem); color:var(--rose); text-align:right; margin-top:26px; position:relative; z-index:1; }
+
+/* HEARTBEAT */
+.hb-section{text-align:center;padding:clamp(44px,9vw,80px) 24px}
+.hb-ring {
+display:inline-flex; align-items:center; justify-content:center;
+width:clamp(130px,35vw,172px); height:clamp(130px,35vw,172px);
+border-radius:50%;
+background:radial-gradient(ellipse,rgba(194,24,91,.11) 0%,transparent 70%);
+border:1px solid rgba(194,24,91,.2);
+box-shadow:0 0 45px rgba(194,24,91,.12);
+cursor:pointer;
+animation:ringBreath 2s ease-in-out infinite;
+-webkit-tap-highlight-color:transparent;
+}
+@keyframes ringBreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+.big-heart {
+font-size:clamp(3.8rem,14vw,6.5rem);
+display:inline-block;
+filter:drop-shadow(0 0 16px rgba(194,24,91,.7));
+animation:beat 1.3s ease-in-out infinite;
+}
+@keyframes beat {
+0%,100%{transform:scale(1)} 14%{transform:scale(1.2)}
+28%{transform:scale(1.02)} 42%{transform:scale(1.14)} 70%{transform:scale(1)}
+}
+.hb-label{font-family:'Montserrat',sans-serif;font-size:clamp(.56rem,2vw,.7rem);font-weight:200;letter-spacing:.28em;text-transform:uppercase;color:rgba(248,187,208,.38);margin-top:18px}
+
+/* COUNTDOWN */
+.cd-section {
+padding:clamp(50px,10vw,100px) clamp(16px,5vw,40px);
+max-width:520px; margin:0 auto; text-align:center;
+opacity:0; transform:translateY(28px);
+transition:opacity .8s ease,transform .8s ease;
+}
+.cd-section.on{opacity:1;transform:translateY(0)}
+.cd-title{font-family:'Sacramento',cursive;font-size:clamp(1.8rem,6.5vw,3.2rem);color:var(--gold);margin-bottom:7px}
+.cd-sub{font-style:italic;font-size:clamp(.8rem,2.8vw,1rem);color:rgba(248,187,208,.48);margin-bottom:32px;letter-spacing:.05em}
+.cd-grid{display:flex;justify-content:center;gap:clamp(7px,2.8vw,16px);flex-wrap:wrap}
+.cd-box {
+background:linear-gradient(135deg,rgba(123,29,63,.42),rgba(194,24,91,.14));
+border:1px solid rgba(248,187,208,.16); border-radius:13px;
+padding:clamp(10px,2.8vw,18px) clamp(10px,2.8vw,20px);
+min-width:clamp(58px,15vw,88px);
+}
+.cd-num{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,6vw,2.9rem);color:var(--cream);display:block;font-weight:700;line-height:1;text-shadow:0 0 20px rgba(248,187,208,.25)}
+.cd-lab{font-family:'Montserrat',sans-serif;font-size:clamp(.46rem,1.6vw,.6rem);color:rgba(248,187,208,.38);text-transform:uppercase;letter-spacing:.2em;margin-top:4px;display:block}
+.cd-note{margin-top:18px;font-style:italic;font-size:clamp(.68rem,2.2vw,.85rem);color:rgba(248,187,208,.2)}
+
+/* FINAL */
+.final {
+min-height:70svh;
+display:flex; flex-direction:column; align-items:center; justify-content:center;
+text-align:center; padding:clamp(50px,10vw,100px) 24px; position:relative;
+}
+.final::before {
+content:''; position:absolute; inset:0;
+background:radial-gradient(ellipse at 50% 50%,rgba(194,24,91,.22) 0%,transparent 65%);
+pointer-events:none;
+}
+.final-sayang {
+font-family:'Sacramento',cursive;
+font-size:clamp(2.5rem,10vw,6.5rem);
+color:var(--cream); text-shadow:0 0 45px rgba(248,187,208,.28);
+line-height:1.25;
+opacity:0; transform:scale(.92);
+transition:opacity 1s ease,transform 1s ease;
+position:relative; z-index:1;
+}
+.final-sayang.on{opacity:1;transform:scale(1)}
+.final-line {
+width:clamp(50px,16vw,90px); height:1px;
+background:linear-gradient(to right,transparent,var(--gold),transparent);
+margin:20px auto;
+opacity:0; transition:opacity 1s ease .3s;
+position:relative; z-index:1;
+}
+.final-line.on{opacity:1}
+.final-sub {
+font-style:italic;
+font-size:clamp(.92rem,3.2vw,1.35rem);
+color:rgba(248,187,208,.52); letter-spacing:.08em;
+opacity:0; transition:opacity 1s ease .5s;
+position:relative; z-index:1;
+}
+.final-sub.on{opacity:1}
+.final-hts {
+margin-top:26px; font-size:clamp(1rem,3.8vw,1.8rem);
+animation:swayH 3s ease-in-out infinite; position:relative; z-index:1;
+}
+@keyframes swayH { 0%,100%{letter-spacing:.2em} 50%{letter-spacing:.5em} }
+.footer-line {
+margin-top:50px;
+font-family:'Montserrat',sans-serif;
+font-size:clamp(.5rem,1.7vw,.66rem); font-weight:200; letter-spacing:.28em; text-transform:uppercase;
+color:rgba(248,187,208,.18); position:relative; z-index:1;
+}
+
+/* DIVIDER */
+.div{display:flex;align-items:center;justify-content:center;padding:10px clamp(20px,5vw,50px);gap:14px}
+.div-line{flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(248,187,208,.13),transparent)}
+.div-ico{font-size:.85rem;color:rgba(194,24,91,.38)}
+</style>
+
+</head>
+<body>
+
+<canvas id="bgc"></canvas>
+
+<!-- ══════════ OPENING SCREEN ══════════ -->
+<div id="openScreen">
+  <div class="open-inner">
+
+    <div class="phone-wrap">
+      <div class="phone-shell">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="ft-label">
+            <span class="ft-dot"></span>
+            FaceTime &nbsp;·&nbsp; Connected
+          </div>
+          <div class="ft-avs">
+            <div class="av">
+              <div class="av-c y">🧑‍💻</div>
+              <span class="av-n">You</span>
+            </div>
+            <div class="ft-hrt">♥</div>
+            <div class="av">
+              <div class="av-c h">🌸</div>
+              <span class="av-n">Sayang</span>
+            </div>
+          </div>
+          <div class="ft-bub">
+            <p>"Even through this screen,<br>I see my whole world."</p>
+          </div>
+        </div>
+        <div class="ph-shine"></div>
+      </div>
+    </div>
+
+    <p class="open-name">Sayang Sayangku,</p>
+    <p class="open-sub">ini untukmu &nbsp;·&nbsp; happy valentine's day</p>
+    <button class="open-btn" id="openBtn">open my heart &nbsp;♥</button>
+
+  </div>
+</div>
+
+<!-- ══════════ MAIN CONTENT ══════════ -->
+<div id="main">
+
+  <section class="hero">
+    <p class="hero-tag">valentine's day &nbsp;·&nbsp; february 14, 2026</p>
+    <h1 class="hero-h1">You Are My<br><span class="gold-word">Everything</span></h1>
+    <p class="hero-sayang">— cintaku &nbsp;🌹</p>
+    <p class="hero-p">
+      We've never touched. Never sat in the same room.<br>
+      And yet somehow, <em>you already have my whole heart.</em>
+    </p>
+    <div class="scroll-cue">
+      <span>scroll</span>
+      <div class="scroll-bar"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="sec-label reveal">What this feels like<br>every single day</h2>
+    <div class="q-grid">
+      <div class="qcard reveal">
+        <span class="qcard-icon">📱</span>
+        <blockquote>
+          Every FaceTime call ends and I just sit there,
+          still smiling at a dark screen — because even your pixels
+          make everything feel brighter.
+        </blockquote>
+        <div class="qcard-bar"></div>
+      </div>
+      <div class="qcard reveal">
+        <span class="qcard-icon">🌙</span>
+        <blockquote>
+          I haven't held your hand yet. But I've felt your warmth
+          through every late-night voice, every laugh that travels
+          through a screen and lands right inside my chest.
+        </blockquote>
+        <div class="qcard-bar"></div>
+      </div>
+      <div class="qcard reveal">
+        <span class="qcard-icon">✨</span>
+        <blockquote>
+          People say you can't truly love someone you've never met in person.
+          My heart has been disagreeing with that idea for a long time now —
+          because it's been yours, sayang.
+        </blockquote>
+        <div class="qcard-bar"></div>
+      </div>
+      <div class="qcard reveal">
+        <span class="qcard-icon">🫀</span>
+        <blockquote>
+          You didn't walk into my life. You typed your way in,
+          called your way in, laughed your way in —
+          and now I cannot imagine you ever leaving it.
+        </blockquote>
+        <div class="qcard-bar"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="div"><div class="div-line"></div><span class="div-ico">♥</span><div class="div-line"></div></div>
+
+  <section class="ft-section">
+    <h2 class="sec-label reveal">Our kind of<br>together</h2>
+    <div class="ft-screen-big reveal">
+      <div class="ft-bar">
+        <span class="ft-title-txt">FaceTime</span>
+        <div class="ft-status">
+          <span class="ft-green"></span>
+          Live &nbsp;·&nbsp; always
+        </div>
+      </div>
+      <div class="ft-big-avs">
+        <div class="ftb-av">
+          <div class="ftb-c a">🧑‍💻</div>
+          <span class="ftb-lbl">You</span>
+        </div>
+        <div class="ftb-con">♥<small>connected</small></div>
+        <div class="ftb-av">
+          <div class="ftb-c b">🌸</div>
+          <span class="ftb-lbl">Sayang</span>
+        </div>
+      </div>
+      <p class="ft-q">
+        "No Wi-Fi, no signal, no distance in this world<br>
+        could ever disconnect what we have."
+      </p>
+    </div>
+    <p class="ft-desc reveal">
+      We built something <em>extraordinary</em> —<br>
+      without a single shared sunset, without a coffee across a table,
+      without fingers intertwined in the same room.<br><br>
+      Just <em>two voices</em>, two faces on a screen,
+      and a connection so real it <em>defies every ordinary idea</em>
+      of what love is supposed to look like.
+    </p>
+  </section>
+
+  <div class="div"><div class="div-line"></div><span class="div-ico">♥</span><div class="div-line"></div></div>
+
+  <section class="letter-section">
+    <h2 class="sec-label reveal">A letter I've been<br>meaning to write</h2>
+    <div class="letter-paper reveal">
+      <div class="ltr-lines"></div>
+      <div class="ltr-stamp">💌</div>
+      <p class="ltr-dear">Sayang sayangku cintaku,</p>
+      <div class="ltr-body">
+        <p>I want to tell you something I'm not sure I've said clearly enough —
+          <strong>you are the most unexpected, beautiful thing that has ever happened to me.</strong>
+          I didn't plan this. I didn't know that a screen, a voice, and a person
+          I've never touched could make me feel this full.</p>
+        <p>But here we are. Every FaceTime where I see your face light up.
+          Every voice note I replay more than once. Every "good morning"
+          that appears on my phone and completely changes the tone of my day.
+          <em>That's real. That's more real than most things I've ever known.</em></p>
+        <p>I call you sayang sayangku cintaku not just because the words are beautiful —
+          but because <strong>that's what you genuinely are to me</strong>.
+          My darling. My love. The person who somehow already has complete control
+          of my heart — without ever having stood in the same room as me.</p>
+        <p>The day I finally get to be beside you — no screens between us,
+          no delay, no signal dropping at the worst moment —
+          <em>that day is going to be one of the greatest of my life.</em>
+          Until then, know that every single day I fall a little deeper.</p>
+        <p>Happy Valentine's Day, cintaku.
+          <strong>I am so endlessly glad that you exist.</strong></p>
+      </div>
+      <p class="ltr-sign">Yours, completely &nbsp;♥</p>
+    </div>
+  </section>
+
+  <div class="div"><div class="div-line"></div><span class="div-ico">♥</span><div class="div-line"></div></div>
+
+  <section class="hb-section">
+    <div class="hb-ring" id="hbRing">
+      <span class="big-heart">❤️</span>
+    </div>
+    <p class="hb-label">tap &nbsp;—&nbsp; feel my heartbeat</p>
+  </section>
+
+  <section class="cd-section reveal" id="cdSec">
+    <h2 class="cd-title">Until the day we finally meet</h2>
+    <p class="cd-sub">Every second brings me one closer to you</p>
+    <div class="cd-grid">
+      <div class="cd-box"><span class="cd-num" id="cD">--</span><span class="cd-lab">Days</span></div>
+      <div class="cd-box"><span class="cd-num" id="cH">--</span><span class="cd-lab">Hours</span></div>
+      <div class="cd-box"><span class="cd-num" id="cM">--</span><span class="cd-lab">Mins</span></div>
+      <div class="cd-box"><span class="cd-num" id="cS">--</span><span class="cd-lab">Secs</span></div>
+    </div>
+    <p class="cd-note">✦ change the target date in the code to your planned meeting day</p>
+  </section>
+
+  <section class="final">
+    <p class="final-sayang reveal">
+      Happy Valentine's Day<br>
+      <span style="color:var(--gold)">sayang sayangku</span><br>
+      cintaku &nbsp;🌹
+    </p>
+    <div class="final-line reveal"></div>
+    <p class="final-sub reveal">from the person whose heart already belongs to you</p>
+    <div class="final-hts">♥ &nbsp; ♥ &nbsp; ♥</div>
+    <p class="footer-line">made with my whole heart &nbsp;·&nbsp; february 14, 2026</p>
+  </section>
+
+</div>
+
+<script>
+/* ── PARTICLES (throttled for mobile) ── */
+const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');
+let W,H,pts=[];
+function rsz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+const SYM=['♥','❤','✦','·','˖'];
+const COLS=['rgba(194,24,91,','rgba(248,187,208,','rgba(228,184,74,','rgba(255,255,255,'];
+/* fewer particles on mobile */
+const MAX_PTS = window.innerWidth < 600 ? 28 : 55;
+function mkP(){
+  return{x:Math.random()*W,y:H+20,vx:(Math.random()-.5)*.6,vy:-(0.35+Math.random()*1.2),
+    a:.45+Math.random()*.4,d:.0016+Math.random()*.002,sz:6+Math.random()*14,
+    s:SYM[Math.floor(Math.random()*SYM.length)],c:COLS[Math.floor(Math.random()*COLS.length)],
+    sp:(Math.random()-.5)*.02,ang:Math.random()*Math.PI*2};
+}
+for(let i=0;i<MAX_PTS;i++){const p=mkP();p.y=Math.random()*H;pts.push(p);}
+
+let lastFrame=0;
+(function loop(ts){
+  /* throttle to ~40fps on mobile, 60fps on desktop */
+  const interval = window.innerWidth < 600 ? 25 : 16;
+  if(ts - lastFrame >= interval){
+    lastFrame = ts;
+    ctx.clearRect(0,0,W,H);
+    pts.forEach((p,i)=>{
+      p.x+=p.vx;p.y+=p.vy;p.ang+=p.sp;p.a-=p.d;
+      if(p.a<=0||p.y<-30){pts[i]=mkP();return;}
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang);
+      ctx.globalAlpha=p.a;ctx.font=`${p.sz}px serif`;
+      ctx.fillStyle=p.c+p.a+')';ctx.textAlign='center';ctx.fillText(p.s,0,0);
+      ctx.restore();
+    });
+  }
+  requestAnimationFrame(loop);
+})();
+
+function burst(x,y,n,sym){
+  for(let i=0;i<n;i++){
+    const p=mkP();p.x=x;p.y=y;
+    p.vy=-(1.1+Math.random()*3);p.vx=(Math.random()-.5)*4.5;
+    p.a=1;p.d=.01;p.sz=12+Math.random()*16;
+    if(sym)p.s=sym;pts.push(p);
+  }
+}
+
+/* ── OPEN BUTTON — single unified handler ── */
+const openBtn = document.getElementById('openBtn');
+const openScr = document.getElementById('openScreen');
+const mainEl  = document.getElementById('main');
+let opened = false;
+
+function doOpen(){
+  if(opened) return;
+  opened = true;
+  burst(W/2, H/2, 28, '❤');
+  openScr.classList.add('gone');
+  /* show main immediately, fade-in via CSS animation */
+  mainEl.style.display = 'block';
+  /* force reflow so animation triggers */
+  mainEl.offsetHeight;
+  mainEl.classList.add('on');
+  /* remove opening screen from DOM after transition */
+  setTimeout(()=>{ openScr.style.display='none'; }, 1400);
+}
+
+/* Use click + touchend */
+openBtn.addEventListener('click', function(e){
+  e.stopPropagation();
+  doOpen();
+});
+openBtn.addEventListener('touchend', function(e){
+  e.preventDefault();
+  e.stopPropagation();
+  doOpen();
+});
+
+/* also fire burst on any click anywhere */
+document.addEventListener('click', e=>{
+  if(!opened) return;
+  burst(e.clientX, e.clientY, 5);
+});
+document.addEventListener('touchend', e=>{
+  if(!opened) return;
+  const t = e.changedTouches[0];
+  burst(t.clientX, t.clientY, 5);
+}, {passive:true});
+
+/* ── SCROLL REVEAL ── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ── HEARTBEAT tap ── */
+const hbRing=document.getElementById('hbRing');
+function hbBurst(){
+  const r=hbRing.getBoundingClientRect();
+  burst(r.left+r.width/2, r.top+r.height/2, 28,'❤');
+}
+hbRing.addEventListener('click', hbBurst);
+hbRing.addEventListener('touchend', e=>{ e.preventDefault(); hbBurst(); });
+
+/* ── COUNTDOWN — change date below ── */
+const TARGET=new Date('2026-12-31T00:00:00').getTime();
+function tick(){
+  const diff=TARGET-Date.now();
+  if(diff<=0){['cD','cH','cM','cS'].forEach(id=>document.getElementById(id).textContent='00');return;}
+  document.getElementById('cD').textContent=String(Math.floor(diff/864e5)).padStart(2,'0');
+  document.getElementById('cH').textContent=String(Math.floor((diff%864e5)/36e5)).padStart(2,'0');
+  document.getElementById('cM').textContent=String(Math.floor((diff%36e5)/6e4)).padStart(2,'0');
+  document.getElementById('cS').textContent=String(Math.floor((diff%6e4)/1e3)).padStart(2,'0');
+}
+tick();setInterval(tick,1000);
+</script>
+
+</body>
+</html>
